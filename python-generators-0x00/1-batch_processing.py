@@ -1,13 +1,13 @@
 #!/usr/bin/python3
 import mysql.connector
 
+
 def stream_users_in_batches(batch_size):
     """
     Generator function that fetches rows from the user_data table in batches.
     Yields:
-        list of dict: A batch (list) of user records as dictionaries
+        list of dict: a batch of user records as dictionaries
     """
-    # Connect to database
     connection = mysql.connector.connect(
         host="localhost",
         user="root",
@@ -18,12 +18,11 @@ def stream_users_in_batches(batch_size):
     cursor = connection.cursor(dictionary=True)
     cursor.execute("SELECT user_id, name, email, age FROM user_data")
 
-    # Fetch data in batches
     while True:
         batch = cursor.fetchmany(batch_size)
         if not batch:
             break
-        yield batch  # yield one batch at a time
+        yield batch  # use yield, not return
 
     cursor.close()
     connection.close()
@@ -31,8 +30,8 @@ def stream_users_in_batches(batch_size):
 
 def batch_processing(batch_size):
     """
-    Processes each batch from the stream_users_in_batches generator
-    Filters and prints users over the age of 25
+    Processes each batch streamed from the database and filters users over age 25.
+    Prints each matching user.
     """
     for batch in stream_users_in_batches(batch_size):
         for user in batch:
