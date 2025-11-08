@@ -5,7 +5,7 @@ Memory-Efficient Average Age Calculator using Generators
 seed = __import__('seed')
 
 
-def stream_user_ages():
+def stream_user_ages(): 
     """
     Generator that streams user ages one by one from the user_data table.
     """
