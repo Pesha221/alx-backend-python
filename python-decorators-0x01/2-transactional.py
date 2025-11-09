@@ -1,5 +1,6 @@
 import sqlite3
 import functools
+from datetime import datetime
 
 
 def with_db_connection(func):
@@ -15,15 +16,23 @@ def with_db_connection(func):
     return wrapper
 
 
+def log_transaction(message):
+    """Helper function to log transaction activity with timestamps"""
+    with open("transactions.log", "a") as log_file:
+        log_file.write(f"{datetime.now()} - {message}\n")
+
+
 def transactional(func):
     """Decorator to manage database transactions automatically"""
     @functools.wraps(func)
     def wrapper(conn, *args, **kwargs):
         try:
             result = func(conn, *args, **kwargs)
-            conn.commit()  # ✅ Commit if no error occurs
+            conn.commit()
+            log_transaction(f"COMMIT: {func.__name__} executed successfully")
         except Exception as e:
-            conn.rollback()  # ❌ Rollback on error
+            conn.rollback()
+            log_transaction(f"ROLLBACK: {func.__name__} failed with error: {e}")
             print(f"Transaction rolled back due to error: {e}")
             raise
         return result
