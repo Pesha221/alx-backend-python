@@ -4,39 +4,39 @@ import asyncio
 DB_NAME = "users.db"
 
 
-async def fetch_query(conn, query, params=None):
-    """
-    Execute a single query asynchronously and return results.
-    """
-    async with conn.execute(query, params or ()) as cursor:
-        results = await cursor.fetchall()
-        return results
-
-
-async def fetch_concurrently(queries):
-    """
-    Run multiple queries concurrently.
-    queries: list of tuples -> (query_string, params)
-    """
+async def fetch_query(query, params=None):
+    """Reusable async function to execute a query and fetch results."""
     async with aiosqlite.connect(DB_NAME) as conn:
-        tasks = [fetch_query(conn, q, p) for q, p in queries]
-        results_list = await asyncio.gather(*tasks)
+        async with conn.execute(query, params or ()) as cursor:
+            results = await cursor.fetchall()
+            return results
 
-        # Print results for each query
-        for i, (query, _) in enumerate(queries):
-            print(f"\n📝 Results for query {i+1}: {query}")
-            for row in results_list[i]:
-                print(row)
 
-        return results_list
+async def async_fetch_users():
+    """Fetch all users asynchronously."""
+    results = await fetch_query("SELECT * FROM users")
+    print("👥 All users:")
+    for row in results:
+        print(row)
+    return results
+
+
+async def async_fetch_older_users():
+    """Fetch users older than 40 asynchronously."""
+    results = await fetch_query("SELECT * FROM users WHERE age > ?", (40,))
+    print("\n👴 Users older than 40:")
+    for row in results:
+        print(row)
+    return results
+
+
+async def fetch_concurrently():
+    """Run both queries concurrently using asyncio.gather."""
+    await asyncio.gather(
+        async_fetch_users(),
+        async_fetch_older_users()
+    )
 
 
 if __name__ == "__main__":
-    # Example: list of queries with optional parameters
-    queries_to_run = [
-        ("SELECT * FROM users", None),
-        ("SELECT * FROM users WHERE age > ?", (40,)),
-        ("SELECT * FROM users WHERE age < ?", (30,))
-    ]
-
-    asyncio.run(fetch_concurrently(queries_to_run))
+    asyncio.run(fetch_concurrently())
