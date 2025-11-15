@@ -4,15 +4,14 @@
 import unittest
 from unittest.mock import patch
 from parameterized import parameterized, parameterized_class
-from client import GithubOrgClient # type: ignore
-from fixtures import TEST_PAYLOAD, MockResponse # type: ignore
+from client import GithubOrgClient  # type: ignore
+from fixtures import TEST_PAYLOAD, MockResponse  # type: ignore
 
 
 @parameterized_class(TEST_PAYLOAD)
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        # Patch requests.get once for all tests in this class
         cls.get_patcher = patch('requests.get')
         cls.mock_get = cls.get_patcher.start()
         cls.mock_get.side_effect = [
@@ -31,7 +30,6 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         self.mock_get.assert_any_call(self.org_payload["repos_url"])
 
     def test_public_repos_with_license(self):
-        # Reset side_effect for this test run
         self.mock_get.side_effect = [
             MockResponse(self.org_payload),
             MockResponse(self.repos_payload),
@@ -39,15 +37,13 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         client = GithubOrgClient("alx")
         self.assertEqual(
             client.public_repos(license=self.license_key),
-            self.expected_licensed_repos
+            self.expected_licensed_repos,
         )
         self.mock_get.assert_any_call(f"https://api.github.com/orgs/alx")
         self.mock_get.assert_any_call(self.org_payload["repos_url"])
 
 
 class TestGithubOrgClient(unittest.TestCase):
-    """Simple unit tests for GithubOrgClient without parameterized_class."""
-
     @parameterized.expand([
         ("google",),
         ("abc",),
@@ -75,3 +71,4 @@ class TestGithubOrgClient(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
