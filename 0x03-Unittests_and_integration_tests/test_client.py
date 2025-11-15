@@ -5,26 +5,16 @@ import unittest
 import requests
 from unittest.mock import patch, PropertyMock
 from parameterized import parameterized, parameterized_class
-from client import GithubOrgClient
+from client import GithubOrgClient # type: ignore
 # Assuming fixtures.py provides MockResponse and TEST_PAYLOAD
-from fixtures import TEST_PAYLOAD, MockResponse
+from fixtures import TEST_PAYLOAD, MockResponse # type: ignore
 
 
 # The TestIntegrationGithubOrgClient class addresses the requirements:
-# 1. Uses @parameterized_class decorator.
-# 2. Has setUpClass and tearDownClass class methods.
-@parameterized_class(
-    ("org_payload", "repos_payload", "expected_repos", "license_key", "expected_licensed_repos"),
-    [
-        (
-            data["org_payload"],
-            data["repos_payload"],
-            data["expected_repos"],
-            data["license_key"],
-            data["expected_licensed_repos"]
-        ) for data in TEST_PAYLOAD
-    ]
-)
+# 1. Uses @parameterized_class decorator. 
+# We simplify the usage by passing the list of dictionaries directly.
+# The keys in TEST_PAYLOAD match the class attributes required.
+@parameterized_class(TEST_PAYLOAD)
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """
     Tests GithubOrgClient using class-level patching and parameterized data.
@@ -32,6 +22,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
     due to the @parameterized_class decorator.
     """
 
+    # 2. Has setUpClass and tearDownClass class methods.
     # 3. self.get_patcher is a patcher of requests.get, managed at the class level.
     @classmethod
     def setUpClass(cls):
@@ -132,5 +123,6 @@ class TestGithubOrgClient(unittest.TestCase):
         result = GithubOrgClient.has_license(repo, license_key)
         self.assertEqual(result, expected)
 
+# Add the standard unittest entry point to ensure it runs
 if __name__ == "__main__":
     unittest.main()
