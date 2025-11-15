@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Unit tests for utils.py, covering access_nested_map, get_json, and memoize."""
+"""Unit tests for utils.py, covering access_nested_map, get_json,
+and memoize.
+"""
 
 import unittest
 from typing import Any, Dict, Tuple
@@ -103,7 +105,6 @@ class TestMemoize(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
 
 
 
