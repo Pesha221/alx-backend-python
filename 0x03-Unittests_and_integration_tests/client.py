@@ -1,75 +1,46 @@
 #!/usr/bin/env python3
-"""Generic utilities for github org client.
-"""
+"""GithubOrgClient module"""
+
 import requests
-from functools import wraps
-from typing import (
-    Mapping,
-    Sequence,
-    Any,
-    Dict,
-    Callable,
-)
-
-__all__ = [
-    "access_nested_map",
-    "get_json",
-    "memoize",
-]
+from typing import Dict, List
 
 
-def access_nested_map(nested_map: Mapping, path: Sequence) -> Any:
-    """Access nested map with key path.
-    Parameters
-    ----------
-    nested_map: Mapping
-        A nested map
-    path: Sequence
-        a sequence of key representing a path to the value
-    Example
-    -------
-    >>> nested_map = {"a": {"b": {"c": 1}}}
-    >>> access_nested_map(nested_map, ["a", "b", "c"])
-    1
-    """
-    for key in path:
-        if not isinstance(nested_map, Mapping):
-            raise KeyError(key)
-        nested_map = nested_map[key]
+class GithubOrgClient:
+    """A Github organization client"""
 
-    return nested_map
+    ORG_URL = "https://api.github.com/orgs/{org}"
 
+    def __init__(self, org: str) -> None:
+        self._org = org
 
-def get_json(url: str) -> Dict:
-    """Get JSON from remote URL.
-    """
-    response = requests.get(url)
-    return response.json()
+    @property
+    def org(self) -> Dict:
+        """Return org data"""
+        url = self.ORG_URL.format(org=self._org)
+        return requests.get(url).json()
 
+    @property
+    def _public_repos_url(self) -> str:
+        """Returns the URL for the org's repos endpoint"""
+        return self.org.get("repos_url")
 
-def memoize(fn: Callable) -> Callable:
-    """Decorator to memoize a method.
-    Example
-    -------
-    class MyClass:
-        @memoize
-        def a_method(self):
-            print("a_method called")
-            return 42
-    >>> my_object = MyClass()
-    >>> my_object.a_method
-    a_method called
-    42
-    >>> my_object.a_method
-    42
-    """
-    attr_name = "_{}".format(fn.__name__)
+    def public_repos(self, license: str = None) -> List[str]:
+        """Return list of repo names, optionally filtered by license"""
+        repos = requests.get(self._public_repos_url).json()
+        repo_names = []
 
-    @wraps(fn)
-    def memoized(self):
-        """"memoized wraps"""
-        if not hasattr(self, attr_name):
-            setattr(self, attr_name, fn(self))
-        return getattr(self, attr_name)
+        for repo in repos:
+            if license is None:
+                repo_names.append(repo["name"])
+            else:
+                repo_license = repo.get("license", {}).get("key")
+                if repo_license == license:
+                    repo_names.append(repo["name"])
 
-    return property(memoized)
+        return repo_names
+
+    @staticmethod
+    def has_license(repo: Dict, license_key: str) -> bool:
+        """Check if repo has a given license"""
+        repo_license = repo.get("license", {}).get("key")
+        return repo_license == license_key
