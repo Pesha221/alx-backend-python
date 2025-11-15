@@ -6,7 +6,7 @@ from typing import (
     Dict,
 )
 
-from utils import (
+from utils import ( # type: ignore
     get_json,
     access_nested_map,
     memoize,
