@@ -11,8 +11,8 @@ class TestGithubOrgClient(unittest.TestCase):
     """Tests for GithubOrgClient.org"""
 
     @parameterized.expand([
-        ("google"),
-        ("abc"),
+        ("google",),  # Corrected tuple format (was missing comma)
+        ("abc",),     # Corrected tuple format
     ])
     @patch("client.get_json")
     def test_org(self, org_name, mock_get_json):
