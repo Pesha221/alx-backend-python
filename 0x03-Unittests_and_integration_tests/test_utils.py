@@ -69,11 +69,8 @@ class TestGetJson(unittest.TestCase):
         result = get_json(test_url)
         self.assertEqual(result, test_payload)
         mock_get.assert_called_once_with(test_url)
-
-
 class TestMemoize(unittest.TestCase):
     """Unit tests for the memoize decorator."""
-
     def test_memoize(self) -> None:
         """Test that a memoized property caches the result and calls method once."""
 
@@ -83,7 +80,6 @@ class TestMemoize(unittest.TestCase):
             def a_method(self) -> int:
                 """Return a fixed integer value."""
                 return 42
-
             @memoize
             def a_property(self) -> int:
                 """Memoized property that calls a_method once."""
@@ -101,7 +97,6 @@ class TestMemoize(unittest.TestCase):
             self.assertEqual(result1, 42)
             self.assertEqual(result2, 42)
             mocked.assert_called_once()
-
 
 if __name__ == '__main__':
     unittest.main()
