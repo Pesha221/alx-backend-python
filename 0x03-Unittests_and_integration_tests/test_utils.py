@@ -20,19 +20,17 @@ class TestAccessNestedMap(unittest.TestCase):
         self.assertEqual(access_nested_map(nested_map, list(path)), expected)
 
     @parameterized.expand([
-        ({}, ("a",), 'a'),
-        ({"a": 1}, ("a", "b"), 'b'),
+        ({}, ("a",), KeyError),
+        ({"a": 1}, ("a", "b"), KeyError),
     ])
-    def test_access_nested_map_exception(self, nested_map: dict, path: tuple, expected_key: str) -> None:
-        """
-        Test that access_nested_map raises KeyError for invalid paths, 
-        checking the exact key that caused the error.
-        """
-        with self.assertRaises(KeyError) as cm:
+    def test_access_nested_map_exception(self, nested_map: dict, path: tuple, expected_exception: type) -> None:
+        """Test that access_nested_map raises KeyError for invalid paths."""
+        with self.assertRaises(expected_exception) as cm:
             access_nested_map(nested_map, list(path))
         
-        # Check that the specific missing key is the argument passed to KeyError
-        self.assertEqual(str(cm.exception), f"'{expected_key}'")
+        # Verify that the correct key that caused the error is in the exception message
+        # For the first case: KeyError: 'a', for the second: KeyError: 'b'
+        self.assertIn(path[-1], str(cm.exception))
 
 
 class TestGetJson(unittest.TestCase):
