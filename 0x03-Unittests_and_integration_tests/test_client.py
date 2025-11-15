@@ -4,7 +4,8 @@
 import unittest
 from unittest.mock import patch
 from parameterized import parameterized
-from client import GithubOrgClient 
+from client import GithubOrgClient
+
 
 class TestGithubOrgClient(unittest.TestCase):
     """Tests for GithubOrgClient.org"""
@@ -22,12 +23,13 @@ class TestGithubOrgClient(unittest.TestCase):
         mock_get_json.return_value = expected_payload
 
         client = GithubOrgClient(org_name)
-        result = client.org  # Must use .org as a property
+        result = client.org  # Property access
 
         self.assertEqual(result, expected_payload)
         mock_get_json.assert_called_once_with(
             f"https://api.github.com/orgs/{org_name}"
         )
+
 
 if __name__ == "__main__":
     unittest.main()
