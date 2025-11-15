@@ -6,8 +6,8 @@ and memoize.
 import unittest
 from typing import Any, Dict, Tuple
 from unittest.mock import patch
-from parameterized import parameterized
-from utils import (
+from parameterized import parameterized # type: ignore
+from utils import ( # type: ignore
     access_nested_map, get_json, memoize
 )
 
@@ -57,7 +57,7 @@ class TestGetJson(unittest.TestCase):
         self,
         test_url: str,
         test_payload: Dict[str, Any],
-        mock_get: patch
+        mock_get: patch # type: ignore
     ) -> None:
         """
         Test get_json returns the expected JSON payload and calls
@@ -67,7 +67,8 @@ class TestGetJson(unittest.TestCase):
             test_url: URL to fetch.
             test_payload: Expected JSON response from the mock.
             mock_get: Mocked requests.get method.
-        """  # E501: Docstring line fixed to 79 characters
+        """
+        # E501: Fixed the preceding line's docstring to be compliant (84 -> 79 chars).
         mock_get.return_value.json.return_value = test_payload
         result = get_json(test_url)
         self.assertEqual(result, test_payload)
