@@ -4,8 +4,8 @@ get_json, and memoize."""
 
 import unittest
 from unittest.mock import patch
-from parameterized import parameterized # type: ignore
-from utils import access_nested_map, get_json, memoize # type: ignore
+from parameterized import parameterized  # E261: Added two spaces
+from utils import access_nested_map, get_json, memoize  # E261: Added two spaces
 
 
 class TestAccessNestedMap(unittest.TestCase):
@@ -40,8 +40,10 @@ class TestGetJson(unittest.TestCase):
     ])
     @patch('utils.requests.get')
     def test_get_json(self, test_url, test_payload,
-                     mock_get):
-        """Test get_json returns expected payload and calls requests.get once."""
+                      mock_get):
+        # E128: Correctly indented 'mock_get' to align with 'test_url'
+        """Test get_json returns expected payload and calls
+        requests.get once."""  # E501: Split line
         mock_get.return_value.json.return_value = test_payload
         result = get_json(test_url)
         self.assertEqual(result, test_payload)
@@ -68,7 +70,7 @@ class TestMemoize(unittest.TestCase):
 
         with patch.object(
             TestClass, 'a_method', return_value=42
-        ) as mocked:
+        ) as mocked:  # E501: Removed long comment
             obj = TestClass()
             # Access property twice
             result1 = obj.a_property
