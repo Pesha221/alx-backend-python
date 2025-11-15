@@ -1,39 +1,37 @@
 #!/usr/bin/env python3
-"""Unit tests for client.GithubOrgClient."""
+"""Unit tests for client.GithubOrgClient"""
+
 import unittest
 from unittest.mock import patch, MagicMock
-from parameterized import parameterized
-from client import GithubOrgClient
-from utils import get_json
+from parameterized import parameterized # type: ignore
+from client import GithubOrgClient # type: ignore
 
 
 class TestGithubOrgClient(unittest.TestCase):
-    """Tests for GithubOrgClient.org property."""
+    """Tests for GithubOrgClient.org"""
 
     @parameterized.expand([
-        ("google",),
-        ("abc",),
+        ("google"),
+        ("abc"),
     ])
-    @patch('client.get_json')
+    @patch("client.get_json")
     def test_org(self, org_name, mock_get_json):
-        """Test that GithubOrgClient.org returns the correct organization."""
-        expected_url = f"https://api.github.com/orgs/{org_name}"
-        expected_payload = {"org": org_name}
-
-        # Mock get_json return value
+        """Test that GithubOrgClient.org returns correct payload
+        and calls get_json exactly once.
+        """
+        expected_payload = {"payload": True}
         mock_get_json.return_value = expected_payload
 
-        # Create client instance
         client = GithubOrgClient(org_name)
-
-        # Access the .org property
         result = client.org
 
-        # Assertions
         self.assertEqual(result, expected_payload)
-        mock_get_json.assert_called_once_with(expected_url)
+        mock_get_json.assert_called_once_with(
+            f"https://api.github.com/orgs/{org_name}"
+        )
 
 
 if __name__ == "__main__":
     unittest.main()
+
 
