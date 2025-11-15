@@ -6,8 +6,8 @@ and memoize.
 import unittest
 from typing import Any, Dict, Tuple
 from unittest.mock import patch
-from parameterized import parameterized # type: ignore
-from utils import access_nested_map, get_json, memoize # type: ignore
+from parameterized import parameterized  # E261: Added two spaces
+from utils import access_nested_map, get_json, memoize  # E261: Added two spaces
 
 
 class TestAccessNestedMap(unittest.TestCase):
@@ -55,9 +55,8 @@ class TestGetJson(unittest.TestCase):
         self,
         test_url: str,
         test_payload: Dict[str, Any],
-        mock_get: patch # type: ignore
+        mock_get: patch  # E261: Added two spaces
     ) -> None:
-        # W293: Removed whitespace from this blank line
         """
         Test get_json returns the expected JSON payload and calls
         requests.get once.
