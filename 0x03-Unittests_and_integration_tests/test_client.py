@@ -1,66 +1,32 @@
 #!/usr/bin/env python3
-"""Generic utilities and GithubOrgClient implementation.
-"""
-import requests
-from functools import wraps
-from typing import (
-    Mapping,
-    Sequence,
-    Any,
-    Dict,
-    Callable,
-)
+"""Unit tests for client.GithubOrgClient"""
 
-__all__ = [
-    "access_nested_map",
-    "get_json",
-    "memoize",
-    "GithubOrgClient",
-]
+import unittest
+from unittest.mock import patch
+from parameterized import parameterized
+from client import GithubOrgClient
 
 
-def access_nested_map(nested_map: Mapping, path: Sequence) -> Any:
-    """Access nested map with key path."""
-    for key in path:
-        if not isinstance(nested_map, Mapping):
-            raise KeyError(key)
-        nested_map = nested_map[key]
-    return nested_map
+class TestGithubOrgClient(unittest.TestCase):
+    """Tests for GithubOrgClient"""
+
+    @parameterized.expand([
+        ("google",),
+        ("abc",),
+    ])
+    @patch("client.get_json")
+    def test_org(self, org_name, mock_get_json):
+        """Test org returns correct JSON"""
+        expected_payload = {"payload": True}
+        mock_get_json.return_value = expected_payload
+
+        client = GithubOrgClient(org_name)
+        self.assertEqual(client.org, expected_payload)
+
+        mock_get_json.assert_called_once_with(
+            f"https://api.github.com/orgs/{org_name}"
+        )
 
 
-def get_json(url: str) -> Dict:
-    """Get JSON from remote URL."""
-    response = requests.get(url)
-    return response.json()
-
-
-def memoize(fn: Callable) -> Callable:
-    """Decorator to memoize a method."""
-    attr_name = "_{}".format(fn.__name__)
-
-    @wraps(fn)
-    def memoized(self):
-        if not hasattr(self, attr_name):
-            setattr(self, attr_name, fn(self))
-        return getattr(self, attr_name)
-
-    return property(memoized)
-
-
-# ------------------------
-#   GithubOrgClient Fix
-# ------------------------
-
-class GithubOrgClient:
-    """Client for GitHub organization information"""
-
-    ORG_URL = "https://api.github.com/orgs/{}"
-
-    def __init__(self, org_name: str):
-        self.org_name = org_name
-
-    @property
-    def org(self) -> Dict:
-        """Return organization data from GitHub API"""
-        url = self.ORG_URL.format(self.org_name)
-        return get_json(url)
+if __name__ == "__main__":
+    unittest.main()
