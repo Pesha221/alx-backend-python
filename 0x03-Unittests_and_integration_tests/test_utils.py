@@ -43,7 +43,12 @@ class TestGetJson(unittest.TestCase):
         ("http://holberton.io", {"payload": False}),
     ])
     @patch('utils.requests.get')
-    def test_get_json(self, test_url, test_payload, mock_get):
+    def test_get_json(
+        self,
+        test_url,
+        test_payload,
+        mock_get
+    ):
         """Test get_json returns expected payload and calls requests.get once."""
         mock_get.return_value.json.return_value = test_payload
         result = get_json(test_url)
@@ -88,6 +93,7 @@ class TestMemoize(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
 
 
 
