@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Unit tests for utils.py, covering access_nested_map, get_json, and memoize."""
+"""Unit tests for utils.py, covering access_nested_map,
+get_json, and memoize."""
 
 import unittest
 from unittest.mock import patch
-from parameterized import parameterized
-from utils import access_nested_map, get_json, memoize
+from parameterized import parameterized # type: ignore
+from utils import access_nested_map, get_json, memoize # type: ignore
 
 
 class TestAccessNestedMap(unittest.TestCase):
@@ -38,7 +39,8 @@ class TestGetJson(unittest.TestCase):
         ("http://holberton.io", {"payload": False}),
     ])
     @patch('utils.requests.get')
-    def test_get_json(self, test_url, test_payload, mock_get):
+    def test_get_json(self, test_url, test_payload,
+                     mock_get):
         """Test get_json returns expected payload and calls requests.get once."""
         mock_get.return_value.json.return_value = test_payload
         result = get_json(test_url)
@@ -66,7 +68,7 @@ class TestMemoize(unittest.TestCase):
 
         with patch.object(
             TestClass, 'a_method', return_value=42
-        ) as mocked:  # patch long line broken into multiple
+        ) as mocked:
             obj = TestClass()
             # Access property twice
             result1 = obj.a_property
