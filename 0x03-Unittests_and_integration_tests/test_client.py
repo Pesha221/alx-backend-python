@@ -10,8 +10,6 @@ from fixtures import TEST_PAYLOAD, MockResponse # type: ignore
 
 @parameterized_class(TEST_PAYLOAD)
 class TestIntegrationGithubOrgClient(unittest.TestCase):
-    """Integration tests for GithubOrgClient with parameterized_class."""
-
     @classmethod
     def setUpClass(cls):
         # Patch requests.get once for all tests in this class
