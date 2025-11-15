@@ -51,15 +51,16 @@ class TestGetJson(unittest.TestCase):
         ("http://holberton.io", {"payload": False}),
     ])
     @patch('utils.requests.get')
-    def test_get_json(
+    def test_get_json(  # E501: Split arguments onto separate lines
         self,
         test_url: str,
         test_payload: Dict[str, Any],
         mock_get: patch
     ) -> None:
         """
-        Test get_json returns the expected JSON payload and calls requests.get once.
-
+        Test get_json returns the expected JSON payload and
+        calls requests.get once.  # E501: Split line
+        
         Args:
             test_url: URL to fetch.
             test_payload: Expected JSON response from the mock.
@@ -105,6 +106,7 @@ class TestMemoize(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
 
 
 
