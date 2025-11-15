@@ -69,7 +69,6 @@ class TestMemoize(unittest.TestCase):
                 """Memoized property calling a_method."""
                 return self.a_method()
 
-        # Fix E501 by splitting arguments in patch.object across multiple lines
         with patch.object(
             TestClass,
             'a_method',
@@ -89,6 +88,7 @@ class TestMemoize(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
 
 
 
