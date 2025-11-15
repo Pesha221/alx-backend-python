@@ -4,14 +4,13 @@
 import unittest
 from unittest.mock import patch, PropertyMock
 from parameterized import parameterized
-from client import GithubOrgClient
+from client import GithubOrgClient # type: ignore
 
 
 class TestGithubOrgClient(unittest.TestCase):
     """Tests for GithubOrgClient class."""
 
-    # --- Existing Tests ---
-
+    # --- test_org ---
     @parameterized.expand([
         ("google",),
         ("abc",),
@@ -31,6 +30,7 @@ class TestGithubOrgClient(unittest.TestCase):
         self.assertEqual(result, expected_payload)
         mock_get_json.assert_called_once_with(expected_url)
 
+    # --- test_public_repos_url ---
     def test_public_repos_url(self):
         """
         Tests that the result of _public_repos_url is the expected one
@@ -49,8 +49,8 @@ class TestGithubOrgClient(unittest.TestCase):
             result_url = client._public_repos_url
             self.assertEqual(result_url, mock_org_payload["repos_url"])
             mock_org.assert_called_once()
-    # --- New Test Implementation: test_public_repos ---
-
+            
+    # --- test_public_repos ---
     @patch("client.get_json")
     def test_public_repos(self, mock_get_json):
         """
@@ -64,6 +64,7 @@ class TestGithubOrgClient(unittest.TestCase):
             {"name": "repo_c"},
         ]
         mock_get_json.return_value = repos_payload
+        
         # 2. Define the URL that _public_repos_url will return
         mock_repos_url = "https://api.github.com/mock/repos"
 
@@ -84,21 +85,27 @@ class TestGithubOrgClient(unittest.TestCase):
             mock_public_repos_url.assert_called_once()
             mock_get_json.assert_called_once_with(mock_repos_url)
 
-@parameterized.expand([
+    # --- test_has_license (FIXED: Moved inside the class) ---
+    @parameterized.expand([
         # Scenario 1: License matches
         ({"license": {"key": "my_license"}}, "my_license", True),
         # Scenario 2: License does not match
         ({"license": {"key": "other_license"}}, "my_license", False),
-        # Add a case for missing license key (ensures error handling in has_license)
+        # Add a case for missing license key
         ({"license": {"key": "my_license"}}, "wrong_license", False),
         # Add a case for repo having no license field
         ({}, "my_license", False),
     ])
-def test_has_license(self, repo, license_key, expected):
+    def test_has_license(self, repo, license_key, expected):
         """
         Unit test for the static method GithubOrgClient.has_license.
         Tests if a repository payload correctly identifies a license key.
         """
+        # Note: Since has_license is a @staticmethod, we call it directly on the class.
         result = GithubOrgClient.has_license(repo, license_key)
         self.assertEqual(result, expected)
+
+# Add the standard unittest entry point to ensure it runs
+if __name__ == "__main__":
+    unittest.main()
         
