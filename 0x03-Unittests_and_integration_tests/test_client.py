@@ -3,8 +3,8 @@
 
 import unittest
 from unittest.mock import patch
-from parameterized import parameterized # type: ignore
-from client import GithubOrgClient # type: ignore
+from parameterized import parameterized
+from client import GithubOrgClient
 
 class TestGithubOrgClient(unittest.TestCase):
     """Tests for GithubOrgClient.org"""
@@ -22,7 +22,7 @@ class TestGithubOrgClient(unittest.TestCase):
         mock_get_json.return_value = expected_payload
 
         client = GithubOrgClient(org_name)
-        result = client.org  # Uses the property .org, not .org()
+        result = client.org  # Must use .org as a property
 
         self.assertEqual(result, expected_payload)
         mock_get_json.assert_called_once_with(
