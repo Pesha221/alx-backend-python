@@ -4,7 +4,7 @@
 import unittest
 from unittest.mock import patch, PropertyMock
 from parameterized import parameterized
-from client import GithubOrgClient # type: ignore
+from client import GithubOrgClient
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -52,6 +52,7 @@ class TestGithubOrgClient(unittest.TestCase):
             self.assertEqual(result_url, mock_org_payload["repos_url"])
             mock_org.assert_called_once()
     
+    # --- New Test Implementation: test_public_repos ---
 
     @patch("client.get_json")
     def test_public_repos(self, mock_get_json):
@@ -81,12 +82,15 @@ class TestGithubOrgClient(unittest.TestCase):
             
             client = GithubOrgClient("testorg")
             
-            
+            # Call the method under test
             repos = client.public_repos()
-            
+
+            # 4. Test that the list of repos is as expected
             expected_repos = ["repo_a", "repo_b", "repo_c"]
             self.assertEqual(repos, expected_repos)
             
+            # 5. Test that the mocked property was called once
             mock_public_repos_url.assert_called_once()
             
+            # 6. Test that the mocked get_json was called once with the correct URL
             mock_get_json.assert_called_once_with(mock_repos_url)
