@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Unit tests for utils.py, covering access_nested_map, get_json,
-and memoize.
+"""Unit tests for utils.py, covering access_nested_map,
+get_json, and memoize.
 """
 
 import unittest
@@ -37,7 +37,7 @@ class TestAccessNestedMap(unittest.TestCase):
         path: Tuple[str, ...],
         expected_key: str
     ) -> None:
-        """Test that access_nested_map raises KeyError with the correct key."""
+        """Test KeyError is raised with the correct key."""
         with self.assertRaises(KeyError) as ctx:
             access_nested_map(nested_map, path)
         self.assertEqual(ctx.exception.args[0], expected_key)
@@ -57,22 +57,18 @@ class TestGetJson(unittest.TestCase):
         test_payload: Dict[str, Any],
         mock_get: patch
     ) -> None:
-        """
-        Test get_json returns expected payload and calls requests.get once.
-
-        Args:
-            test_url: URL to fetch.
-            test_payload: Expected JSON response from the mock.
-            mock_get: Mocked requests.get method.
-        """
+        """Test get_json returns expected payload and calls get once."""
         mock_get.return_value.json.return_value = test_payload
         result = get_json(test_url)
         self.assertEqual(result, test_payload)
         mock_get.assert_called_once_with(test_url)
+
+
 class TestMemoize(unittest.TestCase):
     """Unit tests for the memoize decorator."""
+
     def test_memoize(self) -> None:
-        """Test that a memoized property caches the result and calls method once."""
+        """Test memoized property caches result and calls method once."""
 
         class TestClass:
             """Sample class to test memoization behavior."""
@@ -80,9 +76,10 @@ class TestMemoize(unittest.TestCase):
             def a_method(self) -> int:
                 """Return a fixed integer value."""
                 return 42
+
             @memoize
             def a_property(self) -> int:
-                """Memoized property that calls a_method once."""
+                """Memoized property calling a_method."""
                 return self.a_method()
 
         with patch.object(
@@ -98,5 +95,7 @@ class TestMemoize(unittest.TestCase):
             self.assertEqual(result2, 42)
             mocked.assert_called_once()
 
+
 if __name__ == '__main__':
     unittest.main()
+
