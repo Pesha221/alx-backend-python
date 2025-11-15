@@ -7,7 +7,7 @@ import unittest
 from typing import Any, Dict, Tuple
 from unittest.mock import patch
 from parameterized import parameterized
-from utils import (  # E501: Split imports onto multiple lines
+from utils import (
     access_nested_map, get_json, memoize
 )
 
@@ -67,7 +67,7 @@ class TestGetJson(unittest.TestCase):
             test_url: URL to fetch.
             test_payload: Expected JSON response from the mock.
             mock_get: Mocked requests.get method.
-        """  # E501: Docstring line shortened
+        """  # E501: Docstring line fixed to 79 characters
         mock_get.return_value.json.return_value = test_payload
         result = get_json(test_url)
         self.assertEqual(result, test_payload)
@@ -108,4 +108,4 @@ class TestMemoize(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-# W292: Added a final newline here
+# W292: Final newline added.
