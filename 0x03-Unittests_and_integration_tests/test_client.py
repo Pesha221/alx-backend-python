@@ -82,5 +82,5 @@ class TestGithubOrgClient(unittest.TestCase):
             self.assertEqual(repos, expected_repos)
             # 5. Test that the mocked property was called once
             mock_public_repos_url.assert_called_once()
-            # 6. Test that the mocked get_json was called once with the correct URL
+            
             mock_get_json.assert_called_once_with(mock_repos_url)
