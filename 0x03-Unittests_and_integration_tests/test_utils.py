@@ -5,7 +5,7 @@ get_json, and memoize."""
 import unittest
 from unittest.mock import patch
 from parameterized import parameterized  # E261: Added two spaces
-from utils import (  # E501: Moved imports to multiple lines
+from utils import (
     access_nested_map, get_json, memoize
 )
 
@@ -69,8 +69,9 @@ class TestMemoize(unittest.TestCase):
                 """Memoized property calling a_method."""
                 return self.a_method()
 
-        # E501: Shortened patch.object line
-        with patch.object(TestClass, 'a_method', return_value=42) as mocked:
+        # E501: Line split into two for compliance
+        with patch.object(
+                TestClass, 'a_method', return_value=42) as mocked:
             obj = TestClass()
             # Access property twice
             result1 = obj.a_property
