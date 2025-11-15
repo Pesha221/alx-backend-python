@@ -6,8 +6,8 @@ and memoize.
 import unittest
 from typing import Any, Dict, Tuple
 from unittest.mock import patch
-from parameterized import parameterized
-from utils import access_nested_map, get_json, memoize
+from parameterized import parameterized # type: ignore
+from utils import access_nested_map, get_json, memoize # type: ignore
 
 
 class TestAccessNestedMap(unittest.TestCase):
@@ -51,21 +51,22 @@ class TestGetJson(unittest.TestCase):
         ("http://holberton.io", {"payload": False}),
     ])
     @patch('utils.requests.get')
-    def test_get_json(  # E501: Split arguments onto separate lines
+    def test_get_json(
         self,
         test_url: str,
         test_payload: Dict[str, Any],
-        mock_get: patch
+        mock_get: patch # type: ignore
     ) -> None:
+        # W293: Removed whitespace from this blank line
         """
-        Test get_json returns the expected JSON payload and
-        calls requests.get once.  # E501: Split line
-        
+        Test get_json returns the expected JSON payload and calls
+        requests.get once.
+
         Args:
             test_url: URL to fetch.
             test_payload: Expected JSON response from the mock.
             mock_get: Mocked requests.get method.
-        """
+        """  # E501: Shortened docstring line
         mock_get.return_value.json.return_value = test_payload
         result = get_json(test_url)
         self.assertEqual(result, test_payload)
@@ -106,10 +107,3 @@ class TestMemoize(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-
-
-
-
-
