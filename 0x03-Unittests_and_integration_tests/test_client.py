@@ -83,3 +83,22 @@ class TestGithubOrgClient(unittest.TestCase):
             # 5. Test that the mocked property was called once
             mock_public_repos_url.assert_called_once()
             mock_get_json.assert_called_once_with(mock_repos_url)
+
+@parameterized.expand([
+        # Scenario 1: License matches
+        ({"license": {"key": "my_license"}}, "my_license", True),
+        # Scenario 2: License does not match
+        ({"license": {"key": "other_license"}}, "my_license", False),
+        # Add a case for missing license key (ensures error handling in has_license)
+        ({"license": {"key": "my_license"}}, "wrong_license", False),
+        # Add a case for repo having no license field
+        ({}, "my_license", False),
+    ])
+def test_has_license(self, repo, license_key, expected):
+        """
+        Unit test for the static method GithubOrgClient.has_license.
+        Tests if a repository payload correctly identifies a license key.
+        """
+        result = GithubOrgClient.has_license(repo, license_key)
+        self.assertEqual(result, expected)
+        
