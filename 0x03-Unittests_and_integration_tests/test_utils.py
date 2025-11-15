@@ -64,7 +64,9 @@ class TestMemoize(unittest.TestCase):
                 """Memoized property calling a_method."""
                 return self.a_method()
 
-        with patch.object(TestClass, 'a_method', return_value=42) as mocked:
+        with patch.object(
+            TestClass, 'a_method', return_value=42
+        ) as mocked:  # patch long line broken into multiple
             obj = TestClass()
             # Access property twice
             result1 = obj.a_property
