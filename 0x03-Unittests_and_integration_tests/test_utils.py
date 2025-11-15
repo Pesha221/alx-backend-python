@@ -20,17 +20,19 @@ class TestAccessNestedMap(unittest.TestCase):
         self.assertEqual(access_nested_map(nested_map, list(path)), expected)
 
     @parameterized.expand([
-        ({}, ("a",), KeyError),
-        ({"a": 1}, ("a", "b"), KeyError),
+        ({}, ("a",), 'a'),
+        ({"a": 1}, ("a", "b"), 'b'),
     ])
-    def test_access_nested_map_exception(self, nested_map: dict, path: tuple, expected_exception: type) -> None:
-        """Test that access_nested_map raises KeyError for invalid paths."""
-        with self.assertRaises(expected_exception) as cm:
+    def test_access_nested_map_exception(self, nested_map: dict, path: tuple, expected_key: str) -> None:
+        """
+        Test that access_nested_map raises KeyError for invalid paths, 
+        checking the exact key that caused the error.
+        """
+        with self.assertRaises(KeyError) as cm:
             access_nested_map(nested_map, list(path))
         
-        # Verify that the correct key that caused the error is in the exception message
-        # For the first case: KeyError: 'a', for the second: KeyError: 'b'
-        self.assertIn(path[-1], str(cm.exception))
+        # Check that the specific missing key is the argument passed to KeyError
+        self.assertEqual(str(cm.exception), f"'{expected_key}'")
 
 
 class TestGetJson(unittest.TestCase):
@@ -77,12 +79,12 @@ class TestMemoize(unittest.TestCase):
                 """Property decorated with memoize."""
                 return self.a_method()
 
-        # Create an instance of the TestClass
-        obj = TestClass()
-
-        # Patch a_method to spy on its calls
-        with patch.object(obj, 'a_method', return_value=42) as mock_method:
-            # 1. First access: Should call a_method
+        # Patch a_method on the class level to spy on its calls
+        with patch.object(TestClass, 'a_method', return_value=42) as mock_method:
+            # Create an instance *inside* the patch context
+            obj = TestClass()
+            
+            # 1. First access: Should call a_method via a_property
             result1 = obj.a_property
             
             # 2. Second access: Should use the cached result, NOT call a_method
