@@ -1,105 +1,81 @@
 #!/usr/bin/env python3
-"""Module for testing client.py functions."""
+"""Unit tests for utils.py, covering access_nested_map, get_json, and memoize."""
 
 import unittest
-from unittest.mock import patch, PropertyMock
-from parameterized import parameterized, parameterized_class # type: ignore
-from client import GithubOrgClient # type: ignore
-from fixtures import TEST_PAYLOAD # type: ignore
+from unittest.mock import patch
+from parameterized import parameterized
+from utils import access_nested_map, get_json, memoize
 
 
-class TestGithubOrgClient(unittest.TestCase):
-    """Tests for the GithubOrgClient class."""
-
-    @parameterized.expand([
-        ("google", {"login": "google"}),
-        ("abc", {"login": "abc"}),
-    ])
-    @patch('client.get_json')
-    def test_org(self, org_name: str, expected_org: dict, mock_get_json: patch) -> None:
-        """Test that GithubOrgClient.org returns the expected dictionary."""
-
-        # Configure the mock to return the expected_org dictionary
-        mock_get_json.return_value = expected_org
-
-        # Instantiate the client
-        client = GithubOrgClient(org_name)
-
-        # Call the method
-        result = client.org
-
-        # Assertions
-        # 1. Assert that the result is the expected org dictionary
-        self.assertEqual(result, expected_org)
-
-        # 2. Assert that get_json was called exactly once with the correct URL
-        expected_url = (
-            f"https://api.github.com/orgs/{org_name}"
-        )
-        mock_get_json.assert_called_once_with(expected_url)
-
-    def test_public_repos_url(self) -> None:
-        """Test that _public_repos_url returns the correct repos_url from org data."""
-
-        # Define a mock organization payload containing a 'repos_url' key
-        test_org_payload = {
-            "repos_url": "https://api.github.com/orgs/testorg/repos"
-        }
-
-        # Patch the org property (memoized) to return the test_org_payload
-        with patch.object(GithubOrgClient, 'org',
-                          new_callable=PropertyMock) as mock_org:
-            mock_org.return_value = test_org_payload
-
-            # Instantiate the client
-            client = GithubOrgClient("testorg")
-
-            # Access the property under test
-            result = client._public_repos_url
-
-            # Assertions
-            # 1. Assert that the result matches the repos_url from the payload
-            self.assertEqual(result, test_org_payload["repos_url"])
-
-            # 2. Assert that the org property was accessed exactly once
-            mock_org.assert_called_once()
-
-    @patch('client.get_json')
-    def test_repos_payload(self, mock_get_json: patch) -> None:
-        """Test that repos_payload calls get_json with the correct URL."""
-
-        # Define mock values for the org and repo payload
-        test_repos_url = "https://api.github.com/orgs/testorg/repos"
-        test_repos_payload = [{"name": "repo1"}, {"name": "repo2"}]
-
-        # Configure the mock for get_json
-        mock_get_json.return_value = test_repos_payload
-
-        # Patch the _public_repos_url property to control the URL used
-        with patch.object(GithubOrgClient, '_public_repos_url',
-                          new_callable=PropertyMock) as mock_url:
-            mock_url.return_value = test_repos_url
-
-            # Instantiate the client
-            client = GithubOrgClient("testorg")
-
-            # Call the repos_payload method
-            result = client.repos_payload
-
-            # Assertions
-            self.assertEqual(result, test_repos_payload)
-            mock_get_json.assert_called_once_with(test_repos_url)
-            mock_url.assert_called_once()
+class TestAccessNestedMap(unittest.TestCase):
+    """Test access_nested_map function."""
 
     @parameterized.expand([
-        ({"license": {"key": "apache-2.0"}}, "apache-2.0", True),
-        ({"license": {"key": "bsd-3-clause"}}, "apache-2.0", False),
-        ({"license": {"key": "apache-2.0"}}, "bsd-3-clause", False),
-        ({}, "apache-2.0", False),
-        ({"license": None}, "apache-2.0", False),
+        ({"a": 1}, ("a",), 1),
+        ({"a": {"b": 2}}, ("a",), {"b": 2}),
+        ({"a": {"b": 2}}, ("a", "b"), 2),
     ])
-    def test_has_license(self, repo: dict, license_key: str, expected: bool) -> None:
-        """Test that has_license returns the expected boolean value."""
-        result = GithubOrgClient.has_license(repo, license_key)
-        assert result == expected
+    def test_access_nested_map(self, nested_map, path, expected):
+        """Test that access_nested_map returns correct value."""
+        self.assertEqual(access_nested_map(nested_map, path), expected)
 
+    @parameterized.expand([
+        ({}, ("a",), "a"),
+        ({"a": 1}, ("a", "b"), "b"),
+    ])
+    def test_access_nested_map_exception(self, nested_map, path, expected_key):
+        """Test that access_nested_map raises KeyError with correct key."""
+        with self.assertRaises(KeyError) as ctx:
+            access_nested_map(nested_map, path)
+        self.assertEqual(ctx.exception.args[0], expected_key)
+
+
+class TestGetJson(unittest.TestCase):
+    """Test get_json function with mocked HTTP calls."""
+
+    @parameterized.expand([
+        ("http://example.com", {"payload": True}),
+        ("http://holberton.io", {"payload": False}),
+    ])
+    @patch('utils.requests.get')
+    def test_get_json(self, test_url, test_payload, mock_get):
+        """Test get_json returns expected payload and calls requests.get once."""
+        mock_get.return_value.json.return_value = test_payload
+        result = get_json(test_url)
+        self.assertEqual(result, test_payload)
+        mock_get.assert_called_once_with(test_url)
+
+
+class TestMemoize(unittest.TestCase):
+    """Test memoize decorator."""
+
+    def test_memoize(self):
+        """Test that a memoized property caches the result and calls method once."""
+
+        class TestClass:
+            """Sample class for memoize testing."""
+
+            def a_method(self):
+                """Return a fixed value."""
+                return 42
+
+            @memoize
+            def a_property(self):
+                """Memoized property calling a_method."""
+                return self.a_method()
+
+        with patch.object(TestClass, 'a_method', return_value=42) as mocked:
+            obj = TestClass()
+            # Access property twice
+            result1 = obj.a_property
+            result2 = obj.a_property
+
+            # Assert returned values are correct
+            self.assertEqual(result1, 42)
+            self.assertEqual(result2, 42)
+            # Assert a_method called only once due to memoization
+            mocked.assert_called_once()
+
+
+if __name__ == '__main__':
+    unittest.main()
