@@ -5,10 +5,6 @@ from parameterized import parameterized, parameterized_class
 from client import GithubOrgClient # type: ignore
 from fixtures import TEST_PAYLOAD, MockResponse # type: ignore
 
-@parameterized.expand([
-    {
-    }
-])
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """Integration tests"""
 
