@@ -5,8 +5,8 @@ import unittest
 from unittest.mock import patch, PropertyMock
 from parameterized import parameterized, parameterized_class
 
-from client import GithubOrgClient
-from fixtures import TEST_PAYLOAD
+from client import GithubOrgClient # type: ignore
+from fixtures import TEST_PAYLOAD # type: ignore
 
 
 # ================== Integration Tests ==================
@@ -110,4 +110,3 @@ class TestGithubOrgClient(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
