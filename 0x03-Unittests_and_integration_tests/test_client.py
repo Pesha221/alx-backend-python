@@ -6,18 +6,19 @@ from unittest.mock import patch, PropertyMock
 from parameterized import parameterized, parameterized_class
 
 from client import GithubOrgClient
-from fixtures import TEST_PAYLOAD
+# FIX: Ensure MockResponse is imported to simulate requests.Response objects
+from fixtures import TEST_PAYLOAD, MockResponse
 
 
 # ================== Integration Tests ==================
 
 @parameterized_class(
     (
-        "org_payload",
-        "repos_payload",
-        "expected_repos",
-        "expected_licensed_repos",
-        "license_key",
+   "org_payload",
+   "repos_payload",
+   "expected_repos",
+   "expected_licensed_repos",
+   "license_key",
     ),
     TEST_PAYLOAD
 )
@@ -30,9 +31,10 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         cls.get_patcher = patch("requests.get")
         cls.mock_get = cls.get_patcher.start()
 
+        # FIX 1: Must wrap payloads in MockResponse objects for requests.get mock
         cls.mock_get.side_effect = [
-            cls.org_payload,
-            cls.repos_payload
+            MockResponse(cls.org_payload),
+            MockResponse(cls.repos_payload)
         ]
 
     @classmethod
@@ -53,9 +55,10 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
 
     def test_public_repos_with_license(self):
         """Test filtering repos by license."""
+        # FIX 2: Must reset side_effect and wrap payloads in MockResponse
         self.mock_get.side_effect = [
-            self.org_payload,
-            self.repos_payload
+            MockResponse(self.org_payload),
+            MockResponse(self.repos_payload)
         ]
 
         client = GithubOrgClient("my_org")
@@ -80,6 +83,7 @@ class TestGithubOrgClient(unittest.TestCase):
         ("google",),
         ("abc",),
     ])
+    # Note: Patching the internal helper method is usually safer than patching the utility function.
     @patch("client.get_json")
     def test_org(self, org_name, mock_get_json):
         """Test that org property returns expected JSON."""
