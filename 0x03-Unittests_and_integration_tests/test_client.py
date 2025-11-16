@@ -2,7 +2,7 @@
 """Unit and integration tests for GithubOrgClient."""
 
 import unittest
-from unittest.mock import patch, PropertyMock, Mock
+from unittest.mock import patch, Mock
 from parameterized import parameterized, parameterized_class
 
 from client import GithubOrgClient
@@ -26,11 +26,14 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        """Patch requests.get and set side effects."""
-        cls.get_patcher = patch("requests.get")
+        """Patch client.requests.get and set side effects."""
+        # Patch the requests.get used inside the client module to ensure
+        # we're mocking the same requests object that GithubOrgClient uses.
+        cls.get_patcher = patch("client.requests.get")
         cls.mock_get = cls.get_patcher.start()
 
-        # Return Mock objects whose .json() returns the payloads
+        # Have requests.get(...) return Mock objects whose .json() returns
+        # the payloads the client expects.
         cls.mock_get.side_effect = [
             Mock(**{"json.return_value": cls.org_payload}),
             Mock(**{"json.return_value": cls.repos_payload}),
@@ -54,7 +57,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
 
     def test_public_repos_with_license(self):
         """Test filtering repos by license."""
-        # Reset side effect for this test run
+        # Reset side effect for this test run so .side_effect isn't exhausted
         self.mock_get.side_effect = [
             Mock(**{"json.return_value": self.org_payload}),
             Mock(**{"json.return_value": self.repos_payload}),
