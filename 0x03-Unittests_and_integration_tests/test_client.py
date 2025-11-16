@@ -2,23 +2,22 @@
 """Unit and integration tests for GithubOrgClient."""
 
 import unittest
-# IMPORT FIX: Added Mock to the import list for use in integration tests
-from unittest.mock import patch, PropertyMock, Mock
+from unittest.mock import patch, Mock
 from parameterized import parameterized, parameterized_class
 
-from client import GithubOrgClient
-from fixtures import TEST_PAYLOAD, MockResponse
+from client import GithubOrgClient # type: ignore
+from fixtures import TEST_PAYLOAD # type: ignore
 
 
 # ================== Integration Tests ==================
 
 @parameterized_class(
     (
-   "org_payload",
-   "repos_payload",
-   "expected_repos",
-   "expected_licensed_repos",
-   "license_key",
+        "org_payload",
+        "repos_payload",
+        "expected_repos",
+        "expected_licensed_repos",
+        "license_key",
     ),
     TEST_PAYLOAD
 )
@@ -27,16 +26,17 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        """Patch requests.get and set side effects."""
-        cls.get_patcher = patch("requests.get")
+        """Patch client.requests.get and set side effects."""
+        # Patch the requests.get used inside the client module to ensure
+        # we're mocking the same requests object that GithubOrgClient uses.
+        cls.get_patcher = patch("client.requests.get")
         cls.mock_get = cls.get_patcher.start()
 
-        # FIX 1: Use Mock objects with json.return_value for robust side_effect handling.
-        # This simulates a requests.Response object having a .json() method 
-        # and prevents the common error of exhausting side_effect lists in parameterized integration tests.
+        # Have requests.get(...) return Mock objects whose .json() returns
+        # the payloads the client expects.
         cls.mock_get.side_effect = [
-            Mock(**{'json.return_value': cls.org_payload}),
-            Mock(**{'json.return_value': cls.repos_payload})
+            Mock(**{"json.return_value": cls.org_payload}),
+            Mock(**{"json.return_value": cls.repos_payload}),
         ]
 
     @classmethod
@@ -57,12 +57,10 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
 
     def test_public_repos_with_license(self):
         """Test filtering repos by license."""
-        # FIX 2: Reset side_effect for this test using Mock objects. 
-        # This is necessary because the previous test run has already consumed the mock side effects 
-        # set up in setUpClass, and we need a fresh pair of mocked responses.
+        # Reset side effect for this test run so .side_effect isn't exhausted
         self.mock_get.side_effect = [
-            Mock(**{'json.return_value': self.org_payload}),
-            Mock(**{'json.return_value': self.repos_payload})
+            Mock(**{"json.return_value": self.org_payload}),
+            Mock(**{"json.return_value": self.repos_payload}),
         ]
 
         client = GithubOrgClient("my_org")
@@ -87,7 +85,6 @@ class TestGithubOrgClient(unittest.TestCase):
         ("google",),
         ("abc",),
     ])
-    # Note: Patching the internal helper method is usually safer than patching the utility function.
     @patch("client.get_json")
     def test_org(self, org_name, mock_get_json):
         """Test that org property returns expected JSON."""
