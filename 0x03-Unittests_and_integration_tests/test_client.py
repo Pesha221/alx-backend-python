@@ -1,14 +1,10 @@
-#!/usr/bin/env python3
-"""Integration and unit tests for GithubOrgClient."""
-
 import unittest
 from unittest.mock import patch
 from parameterized import parameterized, parameterized_class
-from client import GithubOrgClient # type: ignore
-from fixtures import TEST_PAYLOAD, MockResponse # type: ignore
+from client import GithubOrgClient
+from fixtures import TEST_PAYLOAD, MockResponse
 
-
-
+@unittest.skipIf(not hasattr(unittest.TestCase, 'addTypeEqualityFunc'), "Requires unittest < 3.1")
 @parameterized_class([
     {
         "org_payload": TEST_PAYLOAD[0]["org_payload"],
@@ -90,6 +86,3 @@ class TestGithubOrgClient(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
-
-
