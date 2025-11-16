@@ -2,9 +2,11 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-"import uuid", "email", "password", "user_id", "first_name", "last_name", "phone_number", "primary_key"
-"conversation_id", "participants", "class Conversation"
-"class Message", "message_id", "message_body", "sent_at", "created_at"
+["import uuid", "email", "password", "user_id", "first_name", "last_name", "phone_number", "primary_key"]
+
+["conversation_id", "participants", "class Conversation"]
+
+["class Message", "message_id", "message_body", "sent_at", "created_at"]
 
 class User(AbstractUser):
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
