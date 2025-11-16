@@ -6,21 +6,45 @@ from unittest.mock import patch
 from parameterized import parameterized, parameterized_class
 
 from client import GithubOrgClient  # type: ignore
-from fixtures import TEST_PAYLOAD, MockResponse  # type: ignore
 
+# ------------------ Fixtures ------------------
 
-# ALX EXPECTS THIS EXACT FORMAT — DO NOT MODIFY
+# MockResponse to simulate requests responses
+class MockResponse:
+    def __init__(self, payload):
+        self.payload = payload
+
+    def json(self):
+        return self.payload
+
+# TEST_PAYLOAD must be a list of dicts with ALL required keys
+TEST_PAYLOAD = [
+    {
+        "org_payload": {"repos_url": "https://api.github.com/orgs/alx/repos"},
+        "repos_payload": [
+            {"name": "repo1", "license": {"key": "mit"}},
+            {"name": "repo2", "license": {"key": "apache-2.0"}},
+            {"name": "repo3", "license": None}
+        ],
+        "expected_repos": ["repo1", "repo2", "repo3"],
+        "expected_licensed_repos": ["repo1"],
+        "license_key": "mit"
+    }
+]
+
+# ---------------- Integration Tests ----------------
+
 @parameterized_class(TEST_PAYLOAD)
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """Integration tests using the TEST_PAYLOAD fixtures."""
 
     @classmethod
     def setUpClass(cls):
-        """Start patching requests.get."""
+        """Patch requests.get."""
         cls.get_patcher = patch("requests.get")
         cls.mock_get = cls.get_patcher.start()
 
-        # Mock API responses in order: org → repos
+        # Mock API responses: org → repos
         cls.mock_get.side_effect = [
             MockResponse(cls.org_payload),
             MockResponse(cls.repos_payload),
@@ -28,32 +52,26 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        """Stop requests.get patch."""
+        """Stop patching requests.get."""
         cls.get_patcher.stop()
 
     def test_public_repos(self):
         """Test public_repos without license filter."""
         client = GithubOrgClient("alx")
+        self.assertEqual(client.public_repos(), self.expected_repos)
 
-        self.assertEqual(
-            client.public_repos(),
-            self.expected_repos
-        )
-
-        # Validate correct URLs
         self.mock_get.assert_any_call("https://api.github.com/orgs/alx")
         self.mock_get.assert_any_call(self.org_payload["repos_url"])
 
     def test_public_repos_with_license(self):
         """Test public_repos with license filter."""
-        # Reset because previous test consumed side_effect
+        # Reset side_effect because previous test consumed it
         self.mock_get.side_effect = [
             MockResponse(self.org_payload),
             MockResponse(self.repos_payload),
         ]
 
         client = GithubOrgClient("alx")
-
         self.assertEqual(
             client.public_repos(license=self.license_key),
             self.expected_licensed_repos
@@ -62,6 +80,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         self.mock_get.assert_any_call("https://api.github.com/orgs/alx")
         self.mock_get.assert_any_call(self.org_payload["repos_url"])
 
+# ---------------- Unit Tests ----------------
 
 class TestGithubOrgClient(unittest.TestCase):
     """Unit tests for GithubOrgClient."""
@@ -90,11 +109,10 @@ class TestGithubOrgClient(unittest.TestCase):
     ])
     def test_has_license(self, repo, license_key, expected):
         """Test has_license static method."""
-        self.assertEqual(
-            GithubOrgClient.has_license(repo, license_key),
-            expected
-        )
+        self.assertEqual(GithubOrgClient.has_license(repo, license_key), expected)
 
+# ---------------- Run Tests ----------------
 
 if __name__ == "__main__":
     unittest.main()
+    
