@@ -2,7 +2,7 @@
 """Unit and integration tests for GithubOrgClient."""
 
 import unittest
-from unittest.mock import patch, PropertyMock
+from unittest.mock import patch, PropertyMock, Mock
 from parameterized import parameterized, parameterized_class
 
 from client import GithubOrgClient
@@ -30,9 +30,10 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         cls.get_patcher = patch("requests.get")
         cls.mock_get = cls.get_patcher.start()
 
+        # Return Mock objects whose .json() returns the payloads
         cls.mock_get.side_effect = [
-            cls.org_payload,
-            cls.repos_payload
+            Mock(**{"json.return_value": cls.org_payload}),
+            Mock(**{"json.return_value": cls.repos_payload}),
         ]
 
     @classmethod
@@ -53,9 +54,10 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
 
     def test_public_repos_with_license(self):
         """Test filtering repos by license."""
+        # Reset side effect for this test run
         self.mock_get.side_effect = [
-            self.org_payload,
-            self.repos_payload
+            Mock(**{"json.return_value": self.org_payload}),
+            Mock(**{"json.return_value": self.repos_payload}),
         ]
 
         client = GithubOrgClient("my_org")
@@ -109,3 +111,4 @@ class TestGithubOrgClient(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+    
