@@ -1,10 +1,10 @@
+#!/usr/bin/env python3
 import unittest
 from unittest.mock import patch
 from parameterized import parameterized, parameterized_class
 from client import GithubOrgClient
 from fixtures import TEST_PAYLOAD, MockResponse
 
-@unittest.skipIf(not hasattr(unittest.TestCase, 'addTypeEqualityFunc'), "Requires unittest < 3.1")
 @parameterized_class([
     {
         "org_payload": TEST_PAYLOAD[0]["org_payload"],
@@ -30,6 +30,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        """Tear down requests.get patcher"""
         cls.get_patcher.stop()
 
     def test_public_repos(self):
@@ -86,3 +87,4 @@ class TestGithubOrgClient(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+        
