@@ -6,10 +6,19 @@ from unittest.mock import patch
 from parameterized import parameterized, parameterized_class
 
 from client import GithubOrgClient  # type: ignore
-from fixtures import TEST_PAYLOAD, MockResponse  # type: ignore
+from fixtures import TEST_PAYLOAD  # type: ignore
 
 
-# ALX EXPECTS THIS EXACT FORMAT — DO NOT MODIFY
+class MockResponse:
+    """Simple mock for requests.get().json()."""
+
+    def __init__(self, payload):
+        self._payload = payload
+
+    def json(self):
+        return self._payload
+
+
 @parameterized_class(TEST_PAYLOAD)
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """Integration tests using the TEST_PAYLOAD fixtures."""
@@ -20,7 +29,6 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         cls.get_patcher = patch("requests.get")
         cls.mock_get = cls.get_patcher.start()
 
-        # Mock API responses in order: org → repos
         cls.mock_get.side_effect = [
             MockResponse(cls.org_payload),
             MockResponse(cls.repos_payload),
@@ -40,13 +48,11 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
             self.expected_repos
         )
 
-        # Validate correct URLs
         self.mock_get.assert_any_call("https://api.github.com/orgs/alx")
         self.mock_get.assert_any_call(self.org_payload["repos_url"])
 
     def test_public_repos_with_license(self):
         """Test public_repos with license filter."""
-        # Reset because previous test consumed side_effect
         self.mock_get.side_effect = [
             MockResponse(self.org_payload),
             MockResponse(self.repos_payload),
@@ -70,7 +76,7 @@ class TestGithubOrgClient(unittest.TestCase):
         ("google",),
         ("abc",),
     ])
-    @patch("client.GithubOrgClient._get_json")
+    @patch("client.get_json")
     def test_org(self, org_name, mock_get_json):
         """Test GithubOrgClient.org returns correct JSON."""
         expected_url = f"https://api.github.com/orgs/{org_name}"
