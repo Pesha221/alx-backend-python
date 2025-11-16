@@ -5,10 +5,12 @@ import unittest
 from unittest.mock import patch, PropertyMock
 from parameterized import parameterized, parameterized_class
 
-from client import GithubOrgClient # type: ignore
-from fixtures import TEST_PAYLOAD # type: ignore
+from client import GithubOrgClient
+from fixtures import TEST_PAYLOAD
+
 
 # ================== Integration Tests ==================
+
 @parameterized_class(
     (
         "org_payload",
@@ -21,6 +23,7 @@ from fixtures import TEST_PAYLOAD # type: ignore
 )
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """Integration tests for GithubOrgClient using requests.get."""
+
     @classmethod
     def setUpClass(cls):
         """Patch requests.get and set side effects."""
@@ -31,10 +34,12 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
             cls.org_payload,
             cls.repos_payload
         ]
+
     @classmethod
     def tearDownClass(cls):
         """Undo the patch."""
         cls.get_patcher.stop()
+
     def test_public_repos(self):
         """Test that public_repos returns expected repo list."""
         client = GithubOrgClient("my_org")
@@ -45,6 +50,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
             "https://api.github.com/orgs/my_org"
         )
         self.mock_get.assert_any_call(self.org_payload["repos_url"])
+
     def test_public_repos_with_license(self):
         """Test filtering repos by license."""
         self.mock_get.side_effect = [
@@ -63,8 +69,10 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
             "https://api.github.com/orgs/my_org"
         )
         self.mock_get.assert_any_call(self.org_payload["repos_url"])
-        
+
+
 # ================== Unit Tests ==================
+
 class TestGithubOrgClient(unittest.TestCase):
     """Unit tests for GithubOrgClient."""
 
@@ -98,5 +106,7 @@ class TestGithubOrgClient(unittest.TestCase):
             expected
         )
 
+
 if __name__ == "__main__":
     unittest.main()
+ 
