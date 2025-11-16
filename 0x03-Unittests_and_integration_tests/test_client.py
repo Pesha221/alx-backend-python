@@ -5,6 +5,15 @@ from parameterized import parameterized, parameterized_class
 from client import GithubOrgClient # type: ignore
 from fixtures import TEST_PAYLOAD, MockResponse # type: ignore
 
+@parameterized.expand([
+    {
+      "org_payload": TEST_PAYLOAD[0]["org_payload"],
+      "repos_payload": TEST_PAYLOAD[0]["repos_payload"],
+      "expected_repos": TEST_PAYLOAD[0]["expected_repos"],
+      "expected_licensed_repos": TEST_PAYLOAD[0]["expected_licensed_repos"],
+      "license_key": TEST_PAYLOAD[0]["license_key"],
+    }
+])
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """Integration tests"""
 
@@ -67,10 +76,10 @@ class TestGithubOrgClient(unittest.TestCase):
         mock_get_json.assert_called_once_with(expected_url)
 
     @parameterized.expand([
-        ({"license": {"key": "my_license"}}, "my_license", True),
-        ({"license": {"key": "other"}}, "my_license", False),
-        ({"license": None}, "my_license", False),
-        ({}, "my_license", False),
+     ({"license": {"key": "my_license"}}, "my_license", True),
+     ({"license": {"key": "other"}}, "my_license", False),
+     ({"license": None}, "my_license", False),
+     ({}, "my_license", False),
     ])
     def test_has_license(self, repo, license_key, expected):
         self.assertEqual(GithubOrgClient.has_license(repo, license_key), expected)
