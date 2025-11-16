@@ -27,9 +27,13 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Patch client.requests.get and set side effects."""
+        # Patch the requests.get used inside the client module to ensure
+        # we're mocking the same requests object that GithubOrgClient uses.
         cls.get_patcher = patch("client.requests.get")
         cls.mock_get = cls.get_patcher.start()
 
+        # Have requests.get(...) return Mock objects whose .json() returns
+        # the payloads the client expects.
         cls.mock_get.side_effect = [
             Mock(**{"json.return_value": cls.org_payload}),
             Mock(**{"json.return_value": cls.repos_payload}),
@@ -77,12 +81,12 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
 class TestGithubOrgClient(unittest.TestCase):
     """Unit tests for GithubOrgClient."""
 
-    @patch("client.get_json")
     @parameterized.expand([
         ("google",),
         ("abc",),
     ])
-    def test_org(self, mock_get_json, org_name):
+    @patch("client.get_json")
+    def test_org(self, org_name, mock_get_json):
         """Test that org property returns expected JSON."""
         expected_payload = {"payload": True}
         mock_get_json.return_value = expected_payload
