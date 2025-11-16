@@ -2,10 +2,10 @@
 import unittest
 from unittest.mock import patch
 from parameterized import parameterized, parameterized_class
-from client import GithubOrgClient
-from fixtures import TEST_PAYLOAD, MockResponse
+from client import GithubOrgClient # type: ignore
+from fixtures import TEST_PAYLOAD, MockResponse # type: ignore
 
-@parameterized_class([
+@parameterized.expand([
     {
         "org_payload": TEST_PAYLOAD[0]["org_payload"],
         "repos_payload": TEST_PAYLOAD[0]["repos_payload"],
