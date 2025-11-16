@@ -2,25 +2,25 @@
 """Unit and integration tests for GithubOrgClient."""
 
 import unittest
-from unittest.mock import patch, PropertyMock
+from unittest.mock import patch
 from parameterized import parameterized, parameterized_class
 
 from client import GithubOrgClient
 from fixtures import TEST_PAYLOAD
 
 
+class MockResponse:
+    """Mock of requests.get return value."""
+    def __init__(self, payload):
+        self._payload = payload
+
+    def json(self):
+        return self._payload
+
+
 # ================== Integration Tests ==================
 
-@parameterized_class(
-    (
-        "org_payload",
-        "repos_payload",
-        "expected_repos",
-        "expected_licensed_repos",
-        "license_key",
-    ),
-    TEST_PAYLOAD
-)
+@parameterized_class(TEST_PAYLOAD)
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """Integration tests for GithubOrgClient using requests.get."""
 
@@ -31,8 +31,8 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         cls.mock_get = cls.get_patcher.start()
 
         cls.mock_get.side_effect = [
-            cls.org_payload,
-            cls.repos_payload
+            MockResponse(cls.org_payload),
+            MockResponse(cls.repos_payload),
         ]
 
     @classmethod
@@ -46,16 +46,14 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
 
         self.assertEqual(client.public_repos(), self.expected_repos)
 
-        self.mock_get.assert_any_call(
-            "https://api.github.com/orgs/my_org"
-        )
+        self.mock_get.assert_any_call("https://api.github.com/orgs/my_org")
         self.mock_get.assert_any_call(self.org_payload["repos_url"])
 
     def test_public_repos_with_license(self):
         """Test filtering repos by license."""
         self.mock_get.side_effect = [
-            self.org_payload,
-            self.repos_payload
+            MockResponse(self.org_payload),
+            MockResponse(self.repos_payload),
         ]
 
         client = GithubOrgClient("my_org")
@@ -65,9 +63,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
             self.expected_licensed_repos
         )
 
-        self.mock_get.assert_any_call(
-            "https://api.github.com/orgs/my_org"
-        )
+        self.mock_get.assert_any_call("https://api.github.com/orgs/my_org")
         self.mock_get.assert_any_call(self.org_payload["repos_url"])
 
 
