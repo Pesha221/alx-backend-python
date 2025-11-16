@@ -14,8 +14,8 @@ class User(AbstractUser):
     Custom User model extending AbstractUser to include UUID primary key,
     phone number, and a user role (guest, host, admin).
 
-    Note: The built-in AbstractUser already provides fields like email, 
-    first_name, last_name, and handles password hashing.
+    Note: AbstractUser provides 'password' (for password_hash), 'first_name', 
+    'last_name', and 'email'. We override email and primary key, and add others.
     """
     
     # Role choices as defined in the specification
@@ -37,10 +37,16 @@ class User(AbstractUser):
         verbose_name=_('User ID')
     )
 
-    # email is automatically set to be unique by AbstractUser if used as USERNAME_FIELD,
-    # but we ensure it's unique and can be used as the identifier.
+    # email (VARCHAR, UNIQUE, NOT NULL) - Overridden to ensure uniqueness
     email = models.EmailField(_('email address'), unique=True)
     
+    # first_name (VARCHAR, NOT NULL) - Redefining to ensure it's explicitly present 
+    # and not null, even though AbstractUser provides it.
+    first_name = models.CharField(_('first name'), max_length=150, blank=False)
+    
+    # last_name (VARCHAR, NOT NULL) - Redefining to ensure it's explicitly present
+    last_name = models.CharField(_('last name'), max_length=150, blank=False)
+
     # phone_number (VARCHAR, NULL)
     phone_number = models.CharField(
         max_length=20, 
@@ -61,7 +67,10 @@ class User(AbstractUser):
 
     # Fields required for Django custom user model if not using AbstractUser's defaults
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name'] # Keep 'username' for admin compatibility, but it's often dropped in real apps.
+    # We remove 'username' from REQUIRED_FIELDS since we want to use email for login.
+    REQUIRED_FIELDS = ['first_name', 'last_name'] 
+    
+    # The 'password_hash' column is handled by AbstractUser's 'password' field.
 
     class Meta:
         # Assuming you would set AUTH_USER_MODEL = 'chats.User' in settings.py
