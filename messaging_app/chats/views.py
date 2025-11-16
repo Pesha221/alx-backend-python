@@ -1,3 +1,70 @@
 from django.shortcuts import render
+from rest_framework import viewsets, permissions
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework import status
 
-# Create your views here.
+from .models import Conversation, Message, User
+from .serializers import ConversationSerializer, MessageSerializer, UserSerializer
+
+# -----------------------------
+# Conversation ViewSet
+# -----------------------------
+class ConversationViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for listing, creating, and retrieving conversations.
+    """
+    queryset = Conversation.objects.all().prefetch_related('participants', 'messages')
+    serializer_class = ConversationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Return conversations where the current user is a participant.
+        """
+        user = self.request.user
+        return self.queryset.filter(participants=user)
+
+    @action(detail=True, methods=['post'])
+    def add_participant(self, request, pk=None):
+        """
+        Optional: add a participant to an existing conversation.
+        """
+        conversation = self.get_object()
+        user_id = request.data.get('user_id')
+        try:
+            user = User.objects.get(user_id=user_id)
+            conversation.participants.add(user)
+            conversation.save()
+            return Response({'status': 'participant added'}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+# -----------------------------
+# Message ViewSet
+# -----------------------------
+class MessageViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for listing and sending messages in conversations.
+    """
+    queryset = Message.objects.all().select_related('sender', 'conversation')
+    serializer_class = MessageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Optionally filter messages by conversation_id.
+        """
+        conversation_id = self.request.query_params.get('conversation_id')
+        if conversation_id:
+            return self.queryset.filter(conversation__conversation_id=conversation_id)
+        return self.queryset.none()  # Return empty if no conversation_id provided
+
+    def perform_create(self, serializer):
+        """
+        Set the sender automatically to the current user.
+        """
+        serializer.save(sender=self.request.user)
+
+
