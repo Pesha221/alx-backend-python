@@ -14,10 +14,5 @@ nested_router.register(r'messages', MessageViewSet, basename='conversation-messa
 urlpatterns = [
     path('', include(router.urls)),
     path('', include(nested_router.urls)),
-    
-    # Path for REST framework authentication views (api-auth)
-    path('api-auth/', include('rest_framework.urls')),
-    
-    # Path for the main API routes, including chats.urls under 'api/'
-    path("api/", include('chats.urls')),
+
 ]
