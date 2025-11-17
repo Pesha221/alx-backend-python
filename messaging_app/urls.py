@@ -6,8 +6,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # DRF Login/Logout authentication views (optional, but standard for browsable API)
-    path('', include('rest_framework.urls')),
+    path('api-auth/', include('rest_framework.urls')),
     
     # Main application API endpoints for the 'chats' app
-    path('', include('chats.urls')),
+    # CORRECTION: Implementing API versioning best practice (/api/v1/)
+    path("api/v1/", include('chats.urls')),
 ]
