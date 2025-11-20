@@ -19,13 +19,21 @@ class MockResponse:
         return self._payload
 
 
-@parameterized_class(TEST_PAYLOAD)
+@parameterized_class(
+    (
+        "org_payload",
+        "repos_payload",
+        "expected_repos",
+        "license_key",
+        "expected_licensed_repos",
+    ),
+    TEST_PAYLOAD
+)
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """Integration tests using the TEST_PAYLOAD fixtures."""
 
     @classmethod
     def setUpClass(cls):
-        """Start patching requests.get."""
         cls.get_patcher = patch("requests.get")
         cls.mock_get = cls.get_patcher.start()
 
@@ -36,11 +44,9 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        """Stop requests.get patch."""
         cls.get_patcher.stop()
 
     def test_public_repos(self):
-        """Test public_repos without license filter."""
         client = GithubOrgClient("alx")
 
         self.assertEqual(
@@ -52,7 +58,6 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         self.mock_get.assert_any_call(self.org_payload["repos_url"])
 
     def test_public_repos_with_license(self):
-        """Test public_repos with license filter."""
         self.mock_get.side_effect = [
             MockResponse(self.org_payload),
             MockResponse(self.repos_payload),
@@ -78,7 +83,6 @@ class TestGithubOrgClient(unittest.TestCase):
     ])
     @patch("client.get_json")
     def test_org(self, org_name, mock_get_json):
-        """Test GithubOrgClient.org returns correct JSON."""
         expected_url = f"https://api.github.com/orgs/{org_name}"
         expected_payload = {"id": 123, "repos_url": "mock_url"}
 
@@ -95,7 +99,6 @@ class TestGithubOrgClient(unittest.TestCase):
         ({}, "my_license", False),
     ])
     def test_has_license(self, repo, license_key, expected):
-        """Test has_license static method."""
         self.assertEqual(
             GithubOrgClient.has_license(repo, license_key),
             expected
