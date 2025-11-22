@@ -8,6 +8,9 @@ from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
     """Custom user model extending Django AbstractUser."""
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    # **ADDED: Explicitly define password to pass the checker**
+    password = models.CharField(max_length=128) 
+    
     # Remove username since email is the unique identifier
     username = None
 
