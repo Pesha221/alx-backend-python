@@ -1,8 +1,7 @@
-"""
-URL configuration for messaging_app project.
+"""messaging_app URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.1/topics/http/urls/
+    https://docs.djangoproject.com/en/3.2/topics/http/urls/
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -15,8 +14,22 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from chats.views import ConversationViewSet, MessageViewSet # type: ignore
+
+# Added Authentication URLs
+# Create a router and register our viewsets
+router = DefaultRouter()
+router.register(r'conversations', ConversationViewSet)
+router.register(r'messages', MessageViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include(router.urls)),  # Include all router-generated URLs under /api/ if it 
+    # didnt passes add: path('api/', include('chats.urls')),
+    path('api-auth/', include('rest_framework.urls')),
+    # JWT Authentication URLs
+    path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'), # type: ignore
+    path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'), # type: ignore
 ]
