@@ -5,15 +5,15 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-
 class User(AbstractUser):
     """Custom user model extending Django AbstractUser."""
     user_id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
     )
+    # Remove username to use email as unique identifier
+    username = None
 
     email = models.EmailField(unique=True)
-    password = models.CharField(max_length=255)  # hashed password
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
@@ -28,10 +28,10 @@ class User(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']  # keeps username optional if needed
+    REQUIRED_FIELDS = []  # No required username field since removed
 
     def __str__(self):
-        return f"{self.email}"
+        return self.email
 
 
 class Conversation(models.Model):
@@ -59,9 +59,7 @@ class Message(models.Model):
     )
     message_body = models.TextField()
     sent_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)  # Added as required
 
     def __str__(self):
         return f"Message {self.message_id} from {self.sender.email}"
-
-
-    
