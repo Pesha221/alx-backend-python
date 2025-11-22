@@ -2,13 +2,11 @@
 """A github org client"""
 
 from typing import List, Dict
-
 from utils import (
     get_json,
     access_nested_map,
     memoize,
 )
-
 
 class GithubOrgClient:
     """A Github org client"""
@@ -38,7 +36,7 @@ class GithubOrgClient:
 
     def public_repos(self, license: str = None) -> List[str]:
         """List public repos optionally filtered by license"""
-        repos = self.repos_payload
+        repos = self.repos_payload  # Access property without parentheses
 
         return [
             repo["name"]
@@ -53,3 +51,4 @@ class GithubOrgClient:
             return access_nested_map(repo, ("license", "key")) == license_key
         except KeyError:
             return False
+
