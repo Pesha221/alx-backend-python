@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""A github org client
-"""
+"""A github org client"""
 
 from typing import List, Dict
 
@@ -12,14 +11,15 @@ from utils import (
 
 
 class GithubOrgClient:
-    """A Github org client
-    """
+    """A Github org client"""
+
     ORG_URL = "https://api.github.com/orgs/{org}"
 
     def __init__(self, org_name: str) -> None:
         """Initialize client"""
         self._org_name = org_name
 
+    @property
     @memoize
     def org(self) -> Dict:
         """Returns the org JSON payload"""
@@ -30,8 +30,9 @@ class GithubOrgClient:
         """Returns the URL to the public repos"""
         return self.org["repos_url"]
 
+    @property
     @memoize
-    def repos_payload(self) -> Dict:
+    def repos_payload(self) -> List[Dict]:
         """Returns the repos payload"""
         return get_json(self._public_repos_url)
 
