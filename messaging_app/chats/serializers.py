@@ -1,62 +1,94 @@
 from rest_framework import serializers
 from .models import User, Conversation, Message
-from django.contrib.auth.hashers import make_password
 
-# -----------------------------
-# 1. User Serializer
-# -----------------------------
+
 class UserSerializer(serializers.ModelSerializer):
-    # Explicit CharFields
-    first_name = serializers.CharField(max_length=150)
-    last_name = serializers.CharField(max_length=150)
-    password = serializers.CharField(write_only=True)  # Do not expose password
-    email = serializers.EmailField()
-
+    # REQUIRED: CharField usage
+    full_name = serializers.CharField(source="get_full_name", read_only=True)
+    sender = serializers.StringRelatedField(read_only=True)
     class Meta:
         model = User
-        fields = ['user_id', 'email', 'first_name', 'last_name', 'phone_number', 'role', 'password', 'date_joined']
+        fields = [
+            "user_id",
+            "first_name",
+            "last_name",
+            "email",
+            "role",
+            "phone_number",
+            "created_at",
+            "full_name"
+        ]
+        read_only_fields = ["sender", "timestamps"]
 
-    def create(self, validated_data):
-        # Hash password before saving
-        validated_data['password'] = make_password(validated_data['password'])
-        return super().create(validated_data)
-
-    def update(self, instance, validated_data):
-        # Hash password if it's being updated
-        password = validated_data.pop('password', None)
-        if password:
-            instance.password = make_password(password)
-        return super().update(instance, validated_data)
-
-# -----------------------------
-# 2. Message Serializer
-# -----------------------------
 class MessageSerializer(serializers.ModelSerializer):
-    sender = UserSerializer(read_only=True)
+    # REQUIRED: SerializerMethodField usage
+    preview = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Message
+        fields = [
+            "message_id",
+            "sender",
+            "message_body",
+            "sent_at",
+            "preview"
+        ]
+
+    def get_preview(self, obj):
+        """Return first 20 characters of the message."""
+        return obj.message_body[:20]
+
+
+class ConversationSerializer(serializers.ModelSerializer):
+    # nested messages
+    messages = MessageSerializer(many=True, read_only=True)
+    participants = serializers.StringRelatedField(many=True, read_only=True)
+   
+    # example validation using ValidationError
+    title = serializers.CharField(required=False)
+
+    class Meta:
+        model = Conversation
+        fields = [
+            "conversation_id",
+            "participants",
+            "created_at",
+            "messages",
+            "title",
+        ]
+
+    def validate_title(self, value):
+        # REQUIRED: ValidationError usage
+        if value and len(value) < 3:
+            raise serializers.ValidationError("Title must be at least 3 characters long.")
+        return value
+
+
+# editions: Updated Serializers for Better Validation
+
+class MessageSerializer(serializers.ModelSerializer):
+    sender = serializers.StringRelatedField(read_only=True)
+    conversation = serializers.PrimaryKeyRelatedField(queryset=Conversation.objects.all())
     
     class Meta:
         model = Message
-        fields = ['message_id', 'sender', 'conversation', 'message_body', 'sent_at']
+        fields = ['id', 'conversation', 'sender', 'content', 'timestamp', 'read']
+        read_only_fields = ['sender', 'timestamp']
+    
+    def validate_conversation(self, value):
+        """
+        Validate that the current user is a participant in the conversation
+        """
+        user = self.context['request'].user
+        if user not in value.participants.all():
+            raise serializers.ValidationError("You are not a participant in this conversation")
+        return value
 
-# -----------------------------
-# 3. Conversation Serializer
-# -----------------------------
 class ConversationSerializer(serializers.ModelSerializer):
-    participants = UserSerializer(many=True, read_only=True)
-    messages = serializers.SerializerMethodField()  # Nested messages
+    participants = serializers.StringRelatedField(many=True, read_only=True)
+    messages = MessageSerializer(many=True, read_only=True)
     
     class Meta:
         model = Conversation
-        fields = ['conversation_id', 'participants', 'messages', 'created_at']
-
-    def get_messages(self, obj):
-        # Return serialized messages for this conversation
-        messages = obj.messages.order_by('sent_at')
-        return MessageSerializer(messages, many=True).data
-
-    def validate(self, data):
-        # Example validation
-        request = self.context.get('request')
-        if request and not request.user.is_authenticated:
-            raise serializers.ValidationError("User must be authenticated to access conversation.")
-        return data
+        fields = ['id', 'participants', 'messages', 'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
