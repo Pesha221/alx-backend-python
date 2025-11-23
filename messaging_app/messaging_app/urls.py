@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from chats.views import ConversationViewSet, MessageViewSet # type: ignore
+from chats.views import ConversationViewSet, MessageViewSet
 
 # Added Authentication URLs
 # Create a router and register our viewsets
@@ -30,6 +30,6 @@ urlpatterns = [
     # didnt passes add: path('api/', include('chats.urls')),
     path('api-auth/', include('rest_framework.urls')),
     # JWT Authentication URLs
-    path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'), # type: ignore
-    path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'), # type: ignore
+    path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
