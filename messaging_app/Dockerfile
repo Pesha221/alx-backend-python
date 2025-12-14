@@ -33,6 +33,7 @@ USER django
 # RUN python manage.py collectstatic --noinput || echo "Skipping collectstatic"
 
 # Expose port
+-p
 EXPOSE 8000
 
 # Use simpler command first, then switch to gunicorn
