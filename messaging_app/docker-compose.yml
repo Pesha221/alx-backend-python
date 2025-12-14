@@ -4,13 +4,11 @@ services:
   db:
     image: mysql:8.0
     restart: always
-    env_file:
-      - .env
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
+      MYSQL_DATABASE: messaging_db   # ✅ This is MYSQL_DB
     ports:
       - "3306:3306"
     volumes:
@@ -18,13 +16,18 @@ services:
 
   web:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    command: python3 manage.py runserver 0.0.0.0:8000  # ✅ Run Django server
+    volumes:
+      - .:/app
     ports:
       - "8000:8000"
-    env_file:
-      - .env
     depends_on:
       - db
+    environment:
+      MYSQL_HOST: db
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
+      MYSQL_DB: messaging_db
 
 volumes:
   mysql_data:
