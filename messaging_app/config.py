@@ -1,0 +1,3 @@
+# config.py
+DATABASES = {}
+CACHES = {}
